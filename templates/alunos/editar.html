@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Aluno - {{ app_name }}{% endblock %}
+
+{% block content %}
+
+<div class="mb-8 flex flex-col md:flex-row justify-between items-start gap-4">
+    <div>
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">Editar Aluno</h1>
+        <p class="text-gray-600">Atualize os dados do aluno e seus responsáveis.</p>
+    </div>
+    <div class="flex gap-3">
+        <a href="{{ url_for('alunos.buscar') }}" class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all font-semibold">
+            <i class="fas fa-chevron-left mr-2"></i>Voltar à busca
+        </a>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+    <form action="{{ url_for('alunos.editar_aluno', aluno_id=aluno.id) }}" method="POST" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="matricula" class="block text-sm font-medium text-gray-700 mb-1">Matrícula *</label>
+                <input type="text" id="matricula" name="matricula" required maxlength="30" value="{{ aluno.matricula }}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+            </div>
+            <div>
+                <label for="nome_completo" class="block text-sm font-medium text-gray-700 mb-1">Nome Completo *</label>
+                <input type="text" id="nome_completo" name="nome_completo" required minlength="3" maxlength="100" value="{{ aluno.nome_completo }}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+            </div>
+            <div>
+                <label for="curso" class="block text-sm font-medium text-gray-700 mb-1">Curso *</label>
+                <select id="curso" name="curso" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    <option value="">Selecione o curso</option>
+                    {% for curso in cursos_validos %}
+                    <option value="{{ curso }}" {% if aluno.curso == curso %}selected{% endif %}>{{ curso }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="ano" class="block text-sm font-medium text-gray-700 mb-1">Ano/Turma *</label>
+                <select id="ano" name="ano" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    <option value="">Selecione o ano</option>
+                    {% for ano in anos_validos %}
+                    <option value="{{ ano }}" {% if aluno.ano == ano %}selected{% endif %}>{{ ano }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="data_nascimento" class="block text-sm font-medium text-gray-700 mb-1">Data de Nascimento *</label>
+                <input type="date" id="data_nascimento" name="data_nascimento" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" value="{{ aluno.data_nascimento }}">
+            </div>
+            <div>
+                <label for="sexo" class="block text-sm font-medium text-gray-700 mb-1">Sexo *</label>
+                <select id="sexo" name="sexo" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    <option value="">Selecione</option>
+                    <option value="Masculino" {% if aluno.sexo == 'Masculino' %}selected{% endif %}>Masculino</option>
+                    <option value="Feminino" {% if aluno.sexo == 'Feminino' %}selected{% endif %}>Feminino</option>
+                    <option value="Outro" {% if aluno.sexo == 'Outro' %}selected{% endif %}>Outro</option>
+                </select>
+            </div>
+            <div>
+                <label for="nacionalidade" class="block text-sm font-medium text-gray-700 mb-1">Nacionalidade</label>
+                <input type="text" id="nacionalidade" name="nacionalidade" maxlength="60" value="{{ aluno.nacionalidade }}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+            </div>
+            <div>
+                <label for="naturalidade_cidade" class="block text-sm font-medium text-gray-700 mb-1">Naturalidade (Cidade)</label>
+                <input type="text" id="naturalidade_cidade" name="naturalidade_cidade" maxlength="60" value="{{ aluno.naturalidade_cidade }}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+            </div>
+            <div>
+                <label for="naturalidade_estado" class="block text-sm font-medium text-gray-700 mb-1">Naturalidade (Estado)</label>
+                <input type="text" id="naturalidade_estado" name="naturalidade_estado" maxlength="40" value="{{ aluno.naturalidade_estado }}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+            </div>
+        </div>
+
+        <hr class="my-4">
+
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Endereço</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Rua</label>
+                <input type="text" name="rua" value="{{ aluno.rua }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Número</label>
+                <input type="text" name="numero" value="{{ aluno.numero }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Complemento</label>
+                <input type="text" name="complemento" value="{{ aluno.complemento }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Bairro</label>
+                <input type="text" name="bairro" value="{{ aluno.bairro }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">CEP</label>
+                <input type="text" name="cep" id="cep" maxlength="9" pattern="\d{5}-?\d{3}" value="{{ aluno.cep }}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="00000-000">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Cidade / Estado</label>
+                <div class="flex gap-2">
+                    <input type="text" name="cidade" value="{{ aluno.cidade }}" class="w-2/3 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Cidade">
+                    <input type="text" name="estado" value="{{ aluno.estado }}" class="w-1/3 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="UF">
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-4">
+
+        <div class="flex items-center justify-between gap-4 mb-4">
+            <h2 class="text-lg font-semibold text-gray-900">Responsáveis</h2>
+            <button type="button" onclick="adicionarResponsavelEditar()" class="text-sm text-green-600 font-semibold">+ Adicionar responsável</button>
+        </div>
+
+        <div id="listaResponsaveisEditar" class="space-y-3">
+            {% for responsavel in responsaveis %}
+            <div class="responsavel-row grid grid-cols-1 lg:grid-cols-5 gap-3 items-end">
+                <input type="hidden" name="responsavel_id" value="{{ responsavel.id }}">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                    <input type="text" name="responsavel_nome" value="{{ responsavel.nome_completo }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Parentesco</label>
+                    <input type="text" name="responsavel_parentesco" value="{{ responsavel.grau_parentesco }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Celular</label>
+                    <input type="text" name="responsavel_celular" value="{{ responsavel.celular }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="(00) 90000-0000">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Residencial</label>
+                    <input type="text" name="responsavel_residencial" value="{{ responsavel.residencial }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" name="responsavel_email" value="{{ responsavel.email }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="exemplo@dominio.com">
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="flex gap-3 pt-2">
+            <button type="submit" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-all shadow-sm">Salvar alterações</button>
+            <a href="{{ url_for('alunos.buscar') }}" class="flex-1 py-3 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold transition-all text-center">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function adicionarResponsavelEditar() {
+    const container = document.getElementById('listaResponsaveisEditar');
+    const row = document.createElement('div');
+    row.className = 'responsavel-row grid grid-cols-1 lg:grid-cols-5 gap-3 items-end';
+    row.innerHTML = `
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+            <input type="text" name="responsavel_nome" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Parentesco</label>
+            <input type="text" name="responsavel_parentesco" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Celular</label>
+            <input type="text" name="responsavel_celular" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="(00) 90000-0000">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Residencial</label>
+            <input type="text" name="responsavel_residencial" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input type="email" name="responsavel_email" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="exemplo@dominio.com">
+        </div>
+    `;
+    container.appendChild(row);
+}
+
+document.addEventListener('input', (e) => {
+    if (e.target && e.target.id === 'cep') {
+        let v = e.target.value.replace(/\D/g, '');
+        if (v.length > 5) v = v.slice(0,5) + '-' + v.slice(5,8);
+        e.target.value = v;
+    }
+});
+</script>
+{% endblock %}

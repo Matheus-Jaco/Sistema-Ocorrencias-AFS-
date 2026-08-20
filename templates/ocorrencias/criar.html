@@ -1,0 +1,268 @@
+{% extends 'base.html' %}
+
+{% block title %}Nova Ocorrência - {{ app_name }}{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="mb-8">
+    <h1 class="text-4xl font-bold text-gray-900 mb-2">Registrar Nova Ocorrência</h1>
+    <p class="text-gray-600">Preencha os dados abaixo para registrar uma ocorrência disciplinar</p>
+</div>
+
+<!-- Form Container -->
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-xl border border-gray-100 p-8">
+        
+        {% if erro %}
+        <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-3">
+            <i class="fas fa-exclamation-circle text-red-600 text-xl mt-0.5"></i>
+            <div>
+                <h3 class="font-semibold text-red-900">Erro ao registrar</h3>
+                <p class="text-sm text-red-700">{{ erro }}</p>
+            </div>
+        </div>
+        {% endif %}
+        
+        <form id="formOcorrencia" method="POST" class="space-y-6">
+            
+            <!-- Curso e Ano -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="curso" class="block text-sm font-semibold text-gray-900 mb-2">
+                        Curso *
+                    </label>
+                    <select id="curso" 
+                            name="curso" 
+                            required
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all bg-white">
+                        <option value="">Selecione o curso</option>
+                        <option value="Administração">Administração</option>
+                        <option value="Logística">Logística</option>
+                        <option value="Enfermagem">Enfermagem</option>
+                        <option value="Informática">Informática</option>
+                        <option value="Desenvolvimento de Sistemas">Desenvolvimento de Sistemas</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="ano" class="block text-sm font-semibold text-gray-900 mb-2">
+                        Ano/Turma *
+                    </label>
+                    <select id="ano" 
+                            name="ano" 
+                            required
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all bg-white">
+                        <option value="">Selecione o ano</option>
+                        <option value="1º Ano">1º Ano</option>
+                        <option value="2º Ano">2º Ano</option>
+                        <option value="3º Ano">3º Ano</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Seleção do Aluno (Dinâmico) -->
+            <div>
+                <label for="aluno_id" class="block text-sm font-semibold text-gray-900 mb-2">
+                    Aluno existente
+                </label>
+                <select id="aluno_id" 
+                        name="aluno_id" 
+                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all bg-gray-50">
+                    <option value="">Selecione primeiro o Curso e o Ano/Turma</option>
+                </select>
+                <p id="aluno_helper" class="text-xs text-gray-500 mt-1">Selecione o curso e o ano para carregar a lista de alunos existentes. Caso o aluno não esteja na lista, informe o nome completo abaixo.</p>
+            </div>
+
+            <div>
+                <label for="nome_aluno" class="block text-sm font-semibold text-gray-900 mb-2">
+                    Nome completo do aluno
+                </label>
+                <input id="nome_aluno"
+                       name="nome_aluno"
+                       type="text"
+                       autocomplete="off"
+                       placeholder="Digite apenas se o aluno não estiver na lista"
+                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all bg-white"
+                />
+                <p class="text-xs text-gray-500 mt-1">Informe o nome completo ao registrar uma ocorrência para um aluno ainda não cadastrado.</p>
+            </div>
+            
+            <!-- Data e Gravidade -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="data_ocorrencia" class="block text-sm font-semibold text-gray-900 mb-2">
+                        Data da Ocorrência *
+                    </label>
+                    <input type="date" 
+                           id="data_ocorrencia" 
+                           name="data_ocorrencia" 
+                           required
+                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all">
+                </div>
+                
+                <div>
+                    <label for="gravidade" class="block text-sm font-semibold text-gray-900 mb-2">
+                        Gravidade *
+                    </label>
+                    <select id="gravidade" 
+                            name="gravidade" 
+                            required
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all bg-white">
+                        <option value="">Selecione a gravidade</option>
+                        <option value="Leve">Leve</option>
+                        <option value="Média">Média</option>
+                        <option value="Grave">Grave</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Descrição -->
+            <div>
+                <label for="descricao" class="block text-sm font-semibold text-gray-900 mb-2">
+                    Descrição Detalhada da Ocorrência *
+                </label>
+                <textarea id="descricao" 
+                          name="descricao" 
+                          required
+                          placeholder="Descreva com detalhes o ocorrido..."
+                          rows="5"
+                          minlength="10"
+                          maxlength="1000"
+                          class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all resize-none"></textarea>
+                <p class="text-xs text-gray-500 mt-1">Mínimo 10 caracteres, máximo 1000</p>
+            </div>
+            
+            <!-- Observações -->
+            <div>
+                <label for="observacoes" class="block text-sm font-semibold text-gray-900 mb-2">
+                    Observações Adicionais
+                </label>
+                <textarea id="observacoes" 
+                          name="observacoes" 
+                          placeholder="Observações adicionais (opcional)..."
+                          rows="3"
+                          maxlength="500"
+                          class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all resize-none"></textarea>
+            </div>
+            
+            <!-- Buttons -->
+            <div class="flex gap-4 pt-4">
+                <button type="submit" id="btnSalvar"
+                        class="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-lg hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                    <i class="fas fa-save mr-2"></i>Registrar Ocorrência
+                </button>
+                <a href="{{ url_for('ocorrencias.listar') }}" 
+                   class="flex-1 px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-all text-center">
+                    <i class="fas fa-times mr-2"></i>Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const selectCurso = document.getElementById('curso');
+const selectAno = document.getElementById('ano');
+const selectAluno = document.getElementById('aluno_id');
+const nomeAluno = document.getElementById('nome_aluno');
+const helperAluno = document.getElementById('aluno_helper');
+const btnSalvar = document.getElementById('btnSalvar');
+
+// Escutar mudanças no curso e no ano
+selectCurso.addEventListener('change', buscarAlunos);
+selectAno.addEventListener('change', buscarAlunos);
+
+async function buscarAlunos() {
+    const curso = selectCurso.value;
+    const ano = selectAno.value;
+    
+    // Se algum estiver vazio, desabilitar e limpar o select de alunos
+    if (!curso || !ano) {
+        selectAluno.disabled = true;
+        selectAluno.classList.add('bg-gray-50');
+        selectAluno.innerHTML = '<option value="">Selecione primeiro o Curso e o Ano/Turma</option>';
+        helperAluno.textContent = 'Selecione o Curso e o Ano para carregar a lista de alunos.';
+        helperAluno.className = 'text-xs text-gray-500 mt-1';
+        return;
+    }
+    
+    // Iniciar loading no select de alunos
+    selectAluno.disabled = true;
+    selectAluno.classList.add('bg-gray-50');
+    selectAluno.innerHTML = '<option value="">Buscando alunos...</option>';
+    helperAluno.textContent = 'Carregando lista de alunos da turma...';
+    helperAluno.className = 'text-xs text-blue-500 mt-1';
+    
+    try {
+        const response = await fetch(`/ocorrencias/api/alunos_por_turma?curso=${encodeURIComponent(curso)}&ano=${encodeURIComponent(ano)}`);
+        const data = await response.json();
+        
+        if (data.sucesso) {
+            selectAluno.innerHTML = '';
+            
+            if (data.alunos.length === 0) {
+                selectAluno.innerHTML = '<option value="">Nenhum aluno cadastrado nesta turma</option>';
+                helperAluno.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i>Esta turma não possui alunos. Informe o nome completo abaixo para registrar a ocorrência e o sistema irá criar ou reaproveitar o aluno existente.';
+                helperAluno.className = 'text-xs text-orange-600 mt-1';
+                selectAluno.disabled = true;
+                btnSalvar.disabled = false;
+                btnSalvar.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                selectAluno.disabled = false;
+                selectAluno.classList.remove('bg-gray-50');
+                
+                // Opção inicial padrão
+                const optDefault = document.createElement('option');
+                optDefault.value = '';
+                optDefault.textContent = 'Selecione o aluno';
+                selectAluno.appendChild(optDefault);
+                
+                // Preencher alunos
+                data.alunos.forEach(aluno => {
+                    const opt = document.createElement('option');
+                    opt.value = aluno.id;
+                    opt.textContent = aluno.nome_completo;
+                    selectAluno.appendChild(opt);
+                });
+                
+                helperAluno.textContent = `${data.alunos.length} alunos encontrados nesta turma. Caso o aluno não esteja na lista, informe o nome completo abaixo.`;
+                helperAluno.className = 'text-xs text-green-600 mt-1';
+                btnSalvar.disabled = false;
+                btnSalvar.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        } else {
+            selectAluno.innerHTML = '<option value="">Erro ao buscar alunos</option>';
+            helperAluno.textContent = data.mensagem || 'Não foi possível carregar os alunos.';
+            helperAluno.className = 'text-xs text-red-500 mt-1';
+        }
+    } catch (error) {
+        selectAluno.innerHTML = '<option value="">Erro na requisição</option>';
+        helperAluno.textContent = 'Erro ao se conectar ao servidor.';
+        helperAluno.className = 'text-xs text-red-500 mt-1';
+    }
+}
+
+document.getElementById('formOcorrencia').addEventListener('submit', function(e) {
+    const nomeAlunoValor = nomeAluno.value.trim();
+
+    // Validar se selecionou aluno ou informou nome completo
+    if (!selectAluno.value && !nomeAlunoValor) {
+        e.preventDefault();
+        showNotification('Selecione um aluno da lista ou informe o nome completo do aluno.', 'error');
+        return;
+    }
+
+    // Adicionar efeito de carregamento
+    const btnSubmit = this.querySelector('button[type="submit"]');
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Registrando...';
+});
+
+// Validar data máxima (hoje)
+document.getElementById('data_ocorrencia').max = new Date().toISOString().split('T')[0];
+</script>
+{% endblock %}

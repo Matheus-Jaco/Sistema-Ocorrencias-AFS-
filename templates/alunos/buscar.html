@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}Alunos - {{ app_name }}{% endblock %}
+
+{% block content %}
+
+<div class="mb-8 flex flex-col md:flex-row justify-between items-start gap-4">
+    <div>
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">Alunos</h1>
+        <p class="text-gray-600">Pesquise os alunos cadastrados e visualize informações completas de cada perfil.</p>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl border border-gray-100 p-6 shadow-sm mb-8">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Filtros de pesquisa</h2>
+    <form method="get" action="{{ url_for('alunos.buscar') }}" class="grid grid-cols-1 xl:grid-cols-5 gap-4">
+        <div class="space-y-2">
+            <label for="nome" class="block text-sm font-medium text-gray-700">Nome do aluno</label>
+            <input type="text" id="nome" name="nome" value="{{ filtros.nome }}"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                   placeholder="Digite parte do nome">
+        </div>
+
+        <div class="space-y-2">
+            <label for="matricula" class="block text-sm font-medium text-gray-700">Matrícula</label>
+            <input type="text" id="matricula" name="matricula" value="{{ filtros.matricula }}"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                   placeholder="Digite parte da matrícula">
+        </div>
+
+        <div class="space-y-2">
+            <label for="curso" class="block text-sm font-medium text-gray-700">Curso</label>
+            <select id="curso" name="curso"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100">
+                <option value="">Todos</option>
+                {% for curso in cursos_validos %}
+                <option value="{{ curso }}" {% if filtros.curso == curso %}selected{% endif %}>{{ curso }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="space-y-2">
+            <label for="ano" class="block text-sm font-medium text-gray-700">Ano / Turma</label>
+            <select id="ano" name="ano"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100">
+                <option value="">Todos</option>
+                {% for ano in anos_validos %}
+                <option value="{{ ano }}" {% if filtros.ano == ano %}selected{% endif %}>{{ ano }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="flex items-end gap-3">
+            <button type="submit"
+                    class="px-5 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition-all shadow-sm">
+                <i class="fas fa-search mr-2"></i>Buscar
+            </button>
+            <a href="{{ url_for('alunos.buscar') }}"
+               class="px-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-semibold transition-all text-center">
+                Limpar
+            </a>
+        </div>
+    </form>
+</div>
+
+<div class="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+    <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
+        <div>
+            <h2 class="text-lg font-semibold text-gray-900">Resultados da pesquisa</h2>
+            <p class="text-sm text-gray-500">Foram encontrados <strong>{{ total }}</strong> aluno(s) que correspondem aos filtros.</p>
+        </div>
+        <div class="text-sm text-gray-500">
+            Página {{ page }} de {{ total_pages }}
+        </div>
+    </div>
+
+    {% if alunos %}
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-left divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Nome completo</th>
+                    <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Matrícula</th>
+                    <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Curso</th>
+                    <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Ano</th>
+                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for aluno in alunos %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 py-4 text-sm text-gray-800">{{ aluno.nome_completo }}</td>
+                    <td class="px-4 py-4 text-sm text-gray-700">{{ aluno.matricula }}</td>
+                    <td class="px-4 py-4 text-sm text-gray-700">{{ aluno.curso or 'Não informado' }}</td>
+                    <td class="px-4 py-4 text-sm text-gray-700">{{ aluno.ano or 'Não informado' }}</td>
+                    <td class="px-4 py-4 text-center">
+                        <div class="flex flex-wrap justify-center gap-2">
+                            <a href="{{ url_for('alunos.detalhes_aluno', aluno_id=aluno.id) }}"
+                               class="inline-flex items-center justify-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg transition-all">
+                                Informações
+                            </a>
+                            {% if current_user.is_admin() %}
+                            <a href="{{ url_for('alunos.editar_aluno', aluno_id=aluno.id) }}"
+                               class="inline-flex items-center justify-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-lg transition-all">
+                                Editar
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if total_pages > 1 %}
+    <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="text-sm text-gray-500">Navegue entre as páginas para carregar menos registros por vez.</div>
+        <div class="flex items-center gap-2">
+            {% if page > 1 %}
+            <a href="{{ url_for('alunos.buscar', nome=filtros.nome, matricula=filtros.matricula, curso=filtros.curso, ano=filtros.ano, page=page-1) }}"
+               class="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-all">Anterior</a>
+            {% endif %}
+            {% if page < total_pages %}
+            <a href="{{ url_for('alunos.buscar', nome=filtros.nome, matricula=filtros.matricula, curso=filtros.curso, ano=filtros.ano, page=page+1) }}"
+               class="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-all">Próxima</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="py-16 text-center">
+        {% if filtros.nome or filtros.matricula or filtros.curso or filtros.ano %}
+        <p class="text-lg font-semibold text-gray-900 mb-2">Nenhum aluno encontrado.</p>
+        <p class="text-sm text-gray-500">Tente ajustar os filtros ou remova alguns critérios de busca.</p>
+        {% else %}
+        <p class="text-lg font-semibold text-gray-900 mb-2">Nenhum aluno encontrado.</p>
+        <p class="text-sm text-gray-500">Use os filtros acima para localizar alunos no sistema.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

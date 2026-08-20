@@ -1,0 +1,600 @@
+{% extends 'base.html' %}
+
+{% block title %}Alunos e Turmas - {{ app_name }}{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="mb-8">
+    <h1 class="text-4xl font-bold text-gray-900 mb-2">Alunos e Turmas</h1>
+    <p class="text-gray-600">Gerencie turmas, cursos e o limite de alunos cadastrados</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <!-- Lado Esquerdo: Cadastrar Turma & Lista de Turmas -->
+    <div class="lg:col-span-1 space-y-6">
+        
+        <!-- Bloco Nova Turma -->
+        <div class="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+            <h2 class="text-lg font-bold text-gray-900 mb-4">
+                <i class="fas fa-school text-green-500 mr-2"></i>Nova Turma
+            </h2>
+            <form action="{{ url_for('alunos.criar_turma') }}" method="POST" class="space-y-4">
+                <div>
+                    <label for="curso" class="block text-sm font-medium text-gray-700 mb-1">Curso *</label>
+                    <select id="curso" name="curso" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 text-sm transition-all bg-white">
+                        <option value="">Selecione o curso</option>
+                        {% for curso in cursos_validos %}
+                            <option value="{{ curso }}">{{ curso }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="ano" class="block text-sm font-medium text-gray-700 mb-1">Ano/Turma *</label>
+                    <select id="ano" name="ano" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 text-sm transition-all bg-white">
+                        <option value="">Selecione o ano</option>
+                        {% for ano in anos_validos %}
+                            <option value="{{ ano }}">{{ ano }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <button type="submit" 
+                        class="w-full py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-semibold transition-all shadow-sm">
+                    <i class="fas fa-plus mr-1"></i>Cadastrar Turma
+                </button>
+            </form>
+        </div>
+        
+        <!-- Lista de Turmas -->
+        <div class="space-y-4">
+            <h2 class="text-lg font-bold text-gray-900">
+                <i class="fas fa-list text-green-500 mr-2"></i>Turmas Cadastradas
+            </h2>
+            
+            {% if turmas %}
+                <div class="grid grid-cols-1 gap-4 max-h-[500px] overflow-y-auto pr-1">
+                    {% for turma in turmas %}
+                        <div id="turma-card-{{ turma.id }}" 
+                             onclick="selecionarTurma('{{ turma.id }}', '{{ turma.curso }}', '{{ turma.ano }}', {{ turma.total_alunos }})"
+                             class="turma-card bg-white p-5 rounded-xl border border-gray-200 hover:border-green-300 hover:shadow-md cursor-pointer transition-all relative flex flex-col justify-between">
+                            
+                            <!-- Excluir Turma -->
+                            <button onclick="confirmarExcluirTurma(event, '{{ turma.id }}', '{{ turma.curso }} - {{ turma.ano }}')"
+                                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-all p-1">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                            
+                            <div class="mb-3 pr-6">
+                                <h3 class="font-bold text-gray-800 text-base leading-tight">{{ turma.curso }}</h3>
+                                <span class="inline-block mt-1 px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md text-xs font-semibold">{{ turma.ano }}</span>
+                            </div>
+                            
+                            <!-- Capacidade -->
+                            <div>
+                                <div class="flex justify-between text-xs font-medium text-gray-500 mb-1">
+                                    <span>Alunos: <strong class="text-gray-700" id="card-total-{{ turma.id }}">{{ turma.total_alunos }}</strong> / 45</span>
+                                    <span>{{ ((turma.total_alunos / 45) * 100)|int }}%</span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                                    {% set percent = (turma.total_alunos / 45) * 100 %}
+                                    <div class="h-full rounded-full transition-all duration-500 
+                                                {% if percent >= 90 %}bg-red-500
+                                                {% elif percent >= 70 %}bg-orange-500
+                                                {% else %}bg-green-500{% endif %}"
+                                         style="width: {{ percent if percent <= 100 else 100 }}%">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="bg-gray-50 border border-dashed border-gray-300 rounded-xl p-8 text-center">
+                    <i class="fas fa-folder-open text-3xl text-gray-300 mb-2"></i>
+                    <p class="text-sm text-gray-500 font-medium">Nenhuma turma cadastrada.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Lado Direito: Detalhes da Turma Selecionada (Alunos) -->
+    <div class="lg:col-span-2">
+        <div id="painelAlunos" class="bg-white rounded-xl border border-gray-100 p-8 shadow-sm min-h-[400px] flex flex-col justify-center items-center text-center">
+            <div id="painelEmptyState">
+                <div class="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-users text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-1">Nenhuma turma selecionada</h3>
+                <p class="text-gray-500 text-sm max-w-sm">Selecione uma das turmas ao lado para listar, cadastrar ou excluir alunos.</p>
+            </div>
+            
+            <!-- Conteúdo Dinâmico (Escondido por padrão) -->
+            <div id="painelConteudo" class="hidden w-full flex-col h-full text-left">
+                <!-- Header do Painel -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100 pb-6 mb-6 gap-4">
+                    <div>
+                        <h2 id="tituloTurma" class="text-2xl font-bold text-gray-900 leading-tight">Curso Selecionado</h2>
+                        <span id="badgeAnoTurma" class="inline-block mt-2 px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-full text-xs font-semibold">1º Ano</span>
+                    </div>
+                    
+                    <button onclick="abrirModalAluno()" id="btnAdicionarAluno"
+                            class="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-semibold rounded-lg hover:shadow-md transition-all inline-flex items-center gap-2">
+                        <i class="fas fa-plus"></i>Cadastrar Aluno
+                    </button>
+                </div>
+                
+                <!-- Lista de Alunos (Tabela) -->
+                <div class="flex-grow overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nome Completo</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">ID Interno</th>
+                                <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaAlunosCorpo" class="divide-y divide-gray-200">
+                            <!-- Inserido dinamicamente via JS -->
+                        </tbody>
+                    </table>
+                    
+                    <div id="alunosEmptyState" class="hidden py-12 text-center">
+                        <i class="fas fa-user-slash text-3xl text-gray-300 mb-2"></i>
+                        <p class="text-sm text-gray-500 font-medium">Nenhum aluno cadastrado nesta turma ainda.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Adicionar Aluno -->
+<div id="modalAluno" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-4 overflow-y-auto">
+    <div class="bg-white rounded-xl max-w-3xl w-full p-6 shadow-xl relative animate-fade-in my-10">
+        <button onclick="fecharModalAluno()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-all text-lg">
+            <i class="fas fa-times"></i>
+        </button>
+        <h3 class="text-lg font-bold text-gray-900 mb-4">
+            <i class="fas fa-user-plus text-green-500 mr-2"></i>Cadastrar Novo Aluno
+        </h3>
+        
+        <form action="{{ url_for('alunos.criar_aluno') }}" method="POST" id="formAluno" class="space-y-4">
+            <input type="hidden" id="modalTurmaId" name="turma_id">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="matricula" class="block text-sm font-medium text-gray-700 mb-1">Matrícula *</label>
+                    <input type="text" id="matricula" name="matricula" required maxlength="30"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Ex: 2026-0001">
+                </div>
+                <div>
+                    <label for="nome_completo" class="block text-sm font-medium text-gray-700 mb-1">Nome Completo *</label>
+                    <input type="text" id="nome_completo" name="nome_completo" required minlength="3" maxlength="100"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Ex: João Silva Santos">
+                </div>
+
+                <div>
+                    <label for="data_nascimento" class="block text-sm font-medium text-gray-700 mb-1">Data de Nascimento *</label>
+                    <input type="date" id="data_nascimento" name="data_nascimento" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label for="sexo" class="block text-sm font-medium text-gray-700 mb-1">Sexo *</label>
+                    <select id="sexo" name="sexo" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        <option value="">Selecione</option>
+                        <option>Masculino</option>
+                        <option>Feminino</option>
+                        <option>Outro</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="nacionalidade" class="block text-sm font-medium text-gray-700 mb-1">Nacionalidade</label>
+                    <input type="text" id="nacionalidade" name="nacionalidade" maxlength="60" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label for="naturalidade_cidade" class="block text-sm font-medium text-gray-700 mb-1">Naturalidade (Cidade)</label>
+                    <input type="text" id="naturalidade_cidade" name="naturalidade_cidade" maxlength="60" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label for="naturalidade_estado" class="block text-sm font-medium text-gray-700 mb-1">Naturalidade (Estado)</label>
+                    <input type="text" id="naturalidade_estado" name="naturalidade_estado" maxlength="40" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+            </div>
+
+            <hr class="my-2">
+
+            <h4 class="text-sm font-semibold text-gray-700">Endereço</h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Rua</label>
+                    <input type="text" name="rua" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Número</label>
+                    <input type="text" name="numero" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Complemento</label>
+                    <input type="text" name="complemento" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Bairro</label>
+                    <input type="text" name="bairro" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">CEP</label>
+                    <input type="text" name="cep" id="cep" pattern="\d{5}-?\d{3}" maxlength="9" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="00000-000">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Cidade / Estado</label>
+                    <div class="flex gap-2">
+                        <input type="text" name="cidade" class="w-2/3 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Cidade">
+                        <input type="text" name="estado" class="w-1/3 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="UF">
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-2">
+
+            <h4 class="text-sm font-semibold text-gray-700">Responsáveis (pode adicionar vários)</h4>
+            <div id="listaResponsaveis" class="space-y-3">
+                <div class="responsavel-row grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                        <input type="text" name="responsavel_nome" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Parentesco</label>
+                        <input type="text" name="responsavel_parentesco" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Celular</label>
+                        <input type="text" name="responsavel_celular" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="(00) 90000-0000">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Residencial</label>
+                        <input type="text" name="responsavel_residencial" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" name="responsavel_email" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="exemplo@dominio.com">
+                    </div>
+                </div>
+            </div>
+            <div>
+                <button type="button" onclick="adicionarResponsavel()" class="text-sm text-green-600 font-medium">+ Adicionar responsável</button>
+            </div>
+
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="fecharModalAluno()"
+                        class="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold transition-all">
+                    Cancelar
+                </button>
+                <button type="submit"
+                        class="flex-1 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-semibold transition-all shadow-sm">
+                    Cadastrar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Confirmação Excluir Aluno -->
+<div id="modalConfirmacaoAluno" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-sm w-full p-6 shadow-xl">
+        <div class="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mx-auto mb-4">
+            <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 text-center mb-2">Excluir Aluno</h3>
+        <p class="text-gray-600 text-center text-sm mb-6">
+            Tem certeza de que deseja excluir <strong id="nomeAlunoConfirmacao" class="text-gray-800"></strong>? 
+            <br><span class="text-red-500 font-semibold">Aviso: Todas as ocorrências deste aluno serão apagadas permanentemente!</span>
+        </p>
+        <div class="flex gap-3">
+            <button onclick="fecharModalExcluirAluno()"
+                    class="flex-1 py-2 bg-gray-200 text-gray-700 font-medium rounded-lg text-sm hover:bg-gray-300 transition-all">
+                Cancelar
+            </button>
+            <button id="btnConfirmarDeletarAluno"
+                    class="flex-1 py-2 bg-red-500 text-white font-medium rounded-lg text-sm hover:bg-red-600 transition-all">
+                Excluir
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmação Excluir Turma -->
+<div id="modalConfirmacaoTurma" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-sm w-full p-6 shadow-xl">
+        <div class="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mx-auto mb-4">
+            <i class="fas fa-school text-red-600 text-xl"></i>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 text-center mb-2">Excluir Turma</h3>
+        <p class="text-gray-600 text-center text-sm mb-6">
+            Tem certeza de que deseja excluir a turma <strong id="nomeTurmaConfirmacao" class="text-gray-800"></strong>? 
+            <br><span class="text-red-500 font-semibold">Aviso: Todos os alunos e ocorrências desta turma serão apagados permanentemente!</span>
+        </p>
+        <div class="flex gap-3">
+            <button onclick="fecharModalExcluirTurma()"
+                    class="flex-1 py-2 bg-gray-200 text-gray-700 font-medium rounded-lg text-sm hover:bg-gray-300 transition-all">
+                Cancelar
+            </button>
+            <button id="btnConfirmarDeletarTurma"
+                    class="flex-1 py-2 bg-red-500 text-white font-medium rounded-lg text-sm hover:bg-red-600 transition-all">
+                Excluir
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let turmaSelecionadaId = null;
+let alunoDeletarId = null;
+let turmaDeletarId = null;
+
+function selecionarTurma(id, curso, ano, totalAlunos) {
+    turmaSelecionadaId = id;
+    
+    // Atualizar estilos dos cards para destaque
+    document.querySelectorAll('.turma-card').forEach(card => {
+        card.classList.remove('border-green-500', 'bg-green-50/30', 'ring-2', 'ring-green-100');
+        card.classList.add('border-gray-200', 'bg-white');
+    });
+    
+    const selectedCard = document.getElementById(`turma-card-${id}`);
+    if (selectedCard) {
+        selectedCard.classList.remove('border-gray-200', 'bg-white');
+        selectedCard.classList.add('border-green-500', 'bg-green-50/30', 'ring-2', 'ring-green-100');
+    }
+    
+    // Mudar painel
+    document.getElementById('painelEmptyState').classList.add('hidden');
+    document.getElementById('painelAlunos').classList.remove('justify-center', 'items-center', 'text-center');
+    document.getElementById('painelConteudo').classList.remove('hidden');
+    
+    // Definir textos
+    document.getElementById('tituloTurma').textContent = curso;
+    document.getElementById('badgeAnoTurma').textContent = ano;
+    document.getElementById('modalTurmaId').value = id;
+    
+    // Desabilitar cadastrar se >= 45
+    const btnAdd = document.getElementById('btnAdicionarAluno');
+    if (totalAlunos >= 45) {
+        btnAdd.disabled = true;
+        btnAdd.classList.add('opacity-50', 'cursor-not-allowed');
+        btnAdd.title = "A capacidade máxima da turma é de 45 alunos.";
+    } else {
+        btnAdd.disabled = false;
+        btnAdd.classList.remove('opacity-50', 'cursor-not-allowed');
+        btnAdd.title = "";
+    }
+    
+    // Carregar alunos via AJAX
+    carregarAlunos(id);
+}
+
+async function carregarAlunos(turmaId) {
+    const tbody = document.getElementById('tabelaAlunosCorpo');
+    const emptyState = document.getElementById('alunosEmptyState');
+    tbody.innerHTML = '<tr><td colspan="3" class="px-6 py-8 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>Carregando alunos...</td></tr>';
+    emptyState.classList.add('hidden');
+    
+    try {
+        const response = await fetch(`/alunos/api/turma/${turmaId}/alunos`);
+        const data = await response.json();
+        
+        if (data.sucesso) {
+            tbody.innerHTML = '';
+            
+            // Atualizar contagem no card
+            const count = data.alunos.length;
+            const totalSpan = document.getElementById(`card-total-${turmaId}`);
+            if (totalSpan) totalSpan.textContent = count;
+            
+            // Atualizar botão se o total mudar
+            const btnAdd = document.getElementById('btnAdicionarAluno');
+            if (count >= 45) {
+                btnAdd.disabled = true;
+                btnAdd.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                btnAdd.disabled = false;
+                btnAdd.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+            
+            if (data.alunos.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            
+            data.alunos.forEach(aluno => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 transition-all';
+                tr.setAttribute('data-aluno-id', aluno.id);
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">${aluno.nome_completo}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 font-mono">${aluno.id.substring(0, 8)}...</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-2">
+                        <a href="/alunos/editar/${aluno.id}"
+                           class="inline-flex items-center justify-center px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all text-xs">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <button onclick="confirmarExcluirAluno('${aluno.id}', '${aluno.nome_completo}')" 
+                                class="text-red-500 hover:text-red-700 transition-all p-1">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } else {
+            tbody.innerHTML = `<tr><td colspan="3" class="px-6 py-8 text-center text-red-500">${data.mensagem}</td></tr>`;
+        }
+    } catch (error) {
+        tbody.innerHTML = '<tr><td colspan="3" class="px-6 py-8 text-center text-red-500">Erro ao carregar alunos da turma.</td></tr>';
+    }
+}
+
+// Modal Aluno
+function abrirModalAluno() {
+    if (!turmaSelecionadaId) return;
+    document.getElementById('modalAluno').classList.remove('hidden');
+    document.getElementById('nome_completo').value = '';
+    document.getElementById('nome_completo').focus();
+}
+
+function fecharModalAluno() {
+    document.getElementById('modalAluno').classList.add('hidden');
+}
+
+// Deletar Aluno
+function confirmarExcluirAluno(id, nome) {
+    alunoDeletarId = id;
+    document.getElementById('nomeAlunoConfirmacao').textContent = nome;
+    document.getElementById('modalConfirmacaoAluno').classList.remove('hidden');
+}
+
+function fecharModalExcluirAluno() {
+    document.getElementById('modalConfirmacaoAluno').classList.add('hidden');
+    alunoDeletarId = null;
+}
+
+document.getElementById('btnConfirmarDeletarAluno').addEventListener('click', async () => {
+    if (!alunoDeletarId) return;
+    
+    const btn = document.getElementById('btnConfirmarDeletarAluno');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Excluindo...';
+    
+    try {
+        const response = await fetch(`/alunos/api/aluno/${alunoDeletarId}/deletar`, {
+            method: 'DELETE'
+        });
+        const data = await response.json();
+        
+        if (data.sucesso) {
+            showNotification('Aluno excluído com sucesso!', 'success');
+            fecharModalExcluirAluno();
+            btn.disabled = false;
+            btn.innerHTML = 'Excluir';
+            if (turmaSelecionadaId) {
+                const linhaAluno = document.querySelector(`tr[data-aluno-id="${alunoDeletarId}"]`);
+                if (linhaAluno) {
+                    linhaAluno.remove();
+                }
+
+                const totalSpan = document.getElementById(`card-total-${turmaSelecionadaId}`);
+                if (totalSpan) {
+                    const novoTotal = Math.max((parseInt(totalSpan.textContent || '0', 10) - 1), 0);
+                    totalSpan.textContent = novoTotal;
+                }
+
+                carregarAlunos(turmaSelecionadaId);
+            }
+        } else {
+            showNotification(data.mensagem, 'error');
+            btn.disabled = false;
+            btn.innerHTML = 'Excluir';
+        }
+    } catch (error) {
+        showNotification('Erro ao excluir aluno.', 'error');
+        btn.disabled = false;
+        btn.innerHTML = 'Excluir';
+    }
+});
+
+// Deletar Turma
+function confirmarExcluirTurma(event, id, nome) {
+    event.stopPropagation(); // Evita selecionar a turma ao clicar no botão de apagar
+    turmaDeletarId = id;
+    document.getElementById('nomeTurmaConfirmacao').textContent = nome;
+    document.getElementById('modalConfirmacaoTurma').classList.remove('hidden');
+}
+
+function fecharModalExcluirTurma() {
+    document.getElementById('modalConfirmacaoTurma').classList.add('hidden');
+    turmaDeletarId = null;
+}
+
+document.getElementById('btnConfirmarDeletarTurma').addEventListener('click', async () => {
+    if (!turmaDeletarId) return;
+    
+    const btn = document.getElementById('btnConfirmarDeletarTurma');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Excluindo...';
+    
+    try {
+        const response = await fetch(`/alunos/api/turma/${turmaDeletarId}/deletar`, {
+            method: 'DELETE'
+        });
+        const data = await response.json();
+        
+        if (data.sucesso) {
+            showNotification('Turma excluída com sucesso!', 'success');
+            fecharModalExcluirTurma();
+            
+            // Se a turma deletada era a que estava aberta, limpa o painel
+            if (turmaSelecionadaId === turmaDeletarId) {
+                turmaSelecionadaId = null;
+                document.getElementById('painelConteudo').classList.add('hidden');
+                document.getElementById('painelEmptyState').classList.remove('hidden');
+                document.getElementById('painelAlunos').classList.add('justify-center', 'items-center', 'text-center');
+            }
+            
+            // Recarregar a página para atualizar a lista
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showNotification(data.mensagem, 'error');
+            btn.disabled = false;
+            btn.innerHTML = 'Excluir';
+        }
+    } catch (error) {
+        showNotification('Erro ao excluir turma.', 'error');
+        btn.disabled = false;
+        btn.innerHTML = 'Excluir';
+    }
+});
+
+// Funções para adicionar/remover responsáveis dinamicamente
+function adicionarResponsavel() {
+    const container = document.getElementById('listaResponsaveis');
+    const template = document.querySelector('.responsavel-row');
+    const clone = template.cloneNode(true);
+
+    // Limpar valores
+    clone.querySelectorAll('input').forEach(i => i.value = '');
+
+    // Botão remover
+    const remover = document.createElement('button');
+    remover.type = 'button';
+    remover.className = 'text-sm text-red-600';
+    remover.textContent = 'Remover';
+    remover.onclick = () => clone.remove();
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'flex justify-end';
+    wrapper.appendChild(remover);
+    clone.appendChild(wrapper);
+
+    container.appendChild(clone);
+}
+
+// Máscara simples para CEP
+document.addEventListener('input', (e) => {
+    if (e.target && e.target.id === 'cep') {
+        let v = e.target.value.replace(/\D/g, '');
+        if (v.length > 5) v = v.slice(0,5) + '-' + v.slice(5,8);
+        e.target.value = v;
+    }
+});
+</script>
+{% endblock %}

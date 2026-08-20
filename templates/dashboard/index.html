@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - {{ app_name }}{% endblock %}
+
+{% block content %}
+
+{% set stats = stats | default({}) %}
+{% set total = stats.total | default(0) %}
+{% set por_gravidade = stats.por_gravidade | default({}) %}
+{% set por_curso = stats.por_curso | default({}) %}
+{% set por_ano = stats.por_ano | default({}) %}
+
+<!-- Header -->
+<div class="mb-8">
+    <h1 class="text-4xl font-bold text-gray-900 mb-2">Início</h1>
+    <p class="text-gray-600">Visão geral das ocorrências escolares</p>
+</div>
+
+<!-- Stats Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    
+    <!-- Total de Ocorrências -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-1">Total de Ocorrências</p>
+                <h3 class="text-3xl font-bold text-gray-900">{{ total }}</h3>
+            </div>
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-file-alt text-blue-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ocorrências Leves -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-1">Ocorrências Leves</p>
+                <h3 class="text-3xl font-bold text-gray-900">{{ por_gravidade.get('Leve', 0) }}</h3>
+            </div>
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-check-circle text-green-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ocorrências Médias -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-1">Ocorrências Médias</p>
+                <h3 class="text-3xl font-bold text-gray-900">{{ por_gravidade.get('Média', 0) }}</h3>
+            </div>
+            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-exclamation-circle text-yellow-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ocorrências Graves -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-1">Ocorrências Graves</p>
+                <h3 class="text-3xl font-bold text-gray-900">{{ por_gravidade.get('Grave', 0) }}</h3>
+            </div>
+            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-times-circle text-red-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    
+    <!-- Por Curso -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6">
+        <h2 class="text-lg font-bold text-gray-900 mb-4">Ocorrências por Curso</h2>
+        <div class="space-y-3">
+            {% for curso, quantidade in (stats.por_curso | default({})).items() %}
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-sm font-medium text-gray-700">{{ curso }}</span>
+                    <span class="text-sm font-bold text-gray-900">{{ quantidade }}</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-gradient-to-r from-green-500 to-emerald-600 h-2 rounded-full transition-all duration-300"
+                        style="width: {{ ((quantidade / stats.total * 100) if stats.total else 0) | round(2) }}%"></div>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-sm text-gray-500">Nenhum curso encontrado.</div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Por Ano -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6">
+        <h2 class="text-lg font-bold text-gray-900 mb-4">Ocorrências por Ano</h2>
+        <div class="space-y-3">
+            {% for ano, quantidade in (stats.por_ano | default({})).items() %}
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-sm font-medium text-gray-700">{{ ano }} Ano</span>
+                    <span class="text-sm font-bold text-gray-900">{{ quantidade }}</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full transition-all duration-300"
+                         style="width: {{((quantidade / stats.total * 100) if stats.total else 0) | round(2)}}%"></div>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-sm text-gray-500">Nenhum ano encontrado.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Action Button -->
+<div class="mt-8 text-center flex gap-4 justify-center flex-wrap">
+    {% if not current_user.is_student() %}
+    <a href="{{ url_for('ocorrencias.criar') }}" 
+       class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-lg hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <i class="fas fa-plus"></i>
+        Registrar Nova Ocorrência
+    </a>
+    {% endif %}
+</div>
+
+{% endblock %}

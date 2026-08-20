@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Erro 403 - Acesso Proibido{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center px-4">
+    <div class="text-center">
+        <div class="mb-8">
+            <h1 class="text-6xl font-bold text-red-600">403</h1>
+            <p class="text-2xl text-gray-900 mt-4">Acesso Proibido</p>
+        </div>
+        
+        <p class="text-gray-600 mb-8 text-lg">
+            Você não tem permissão para acessar este recurso.
+        </p>
+        
+        <a href="{{ url_for('dashboard.index') }}" class="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition">
+            ← Voltar ao Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

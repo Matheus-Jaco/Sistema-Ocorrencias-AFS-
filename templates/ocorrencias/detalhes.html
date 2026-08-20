@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalhes da Ocorrência - {{ app_name }}{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">Detalhes da Ocorrência</h1>
+        <p class="text-gray-600">Informações completas do registro</p>
+    </div>
+    <div class="flex gap-3">
+        {% if not current_user.is_student() %}
+        <a href="{{ url_for('ocorrencias.editar', ocorrencia_id=ocorrencia.id) }}" 
+           class="px-6 py-3 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition-all inline-flex items-center gap-2">
+            <i class="fas fa-edit"></i>Editar
+        </a>
+        {% endif %}
+        <a href="{{ url_for('ocorrencias.listar') }}" 
+           class="px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-all inline-flex items-center gap-2">
+            <i class="fas fa-arrow-left"></i>Voltar
+        </a>
+    </div>
+</div>
+
+<!-- Details Card -->
+<div class="max-w-3xl">
+    <div class="bg-white rounded-xl border border-gray-100 p-8">
+        
+        <!-- Main Info -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 pb-8 border-b border-gray-200">
+            
+            <!-- Aluno Info -->
+            <div>
+                <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-2">Aluno</h2>
+                <p class="text-2xl font-bold text-gray-900">{{ ocorrencia.nome_aluno }}</p>
+            </div>
+            
+            <!-- Gravidade -->
+            <div>
+                <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-2">Nível de Gravidade</h2>
+                <div>
+                    {% if ocorrencia.gravidade == 'Leve' %}
+                        <span class="px-4 py-2 bg-green-100 text-green-800 rounded-full font-semibold">Leve</span>
+                    {% elif ocorrencia.gravidade == 'Média' %}
+                        <span class="px-4 py-2 bg-yellow-100 text-yellow-800 rounded-full font-semibold">Média</span>
+                    {% elif ocorrencia.gravidade == 'Grave' %}
+                        <span class="px-4 py-2 bg-red-100 text-red-800 rounded-full font-semibold">Grave</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Course and Year -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 pb-8 border-b border-gray-200">
+            
+            <div>
+                <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-2">Curso</h2>
+                <p class="text-lg font-medium text-gray-900">{{ ocorrencia.curso }}</p>
+            </div>
+            
+            <div>
+                <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-2">Ano</h2>
+                <p class="text-lg font-medium text-gray-900">{{ ocorrencia.ano }}</p>
+            </div>
+            
+            <div>
+                <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-2">Data da Ocorrência</h2>
+                <p class="text-lg font-medium text-gray-900">{{ ocorrencia.data_ocorrencia }}</p>
+            </div>
+        </div>
+        
+        <!-- Description -->
+        <div class="mb-8 pb-8 border-b border-gray-200">
+            <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">Descrição</h2>
+            <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">{{ ocorrencia.descricao }}</p>
+            </div>
+        </div>
+        
+        <!-- Observations -->
+        {% if ocorrencia.observacoes %}
+        <div class="mb-8">
+            <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">Observações Adicionais</h2>
+            <div class="bg-blue-50 rounded-lg p-6 border border-blue-200">
+                <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">{{ ocorrencia.observacoes }}</p>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Metadata -->
+        <div class="pt-6 border-t border-gray-200 space-y-2 text-sm text-gray-600">
+            <p><span class="font-semibold">Criado em:</span> {{ ocorrencia.data_criacao }}</p>
+            {% if ocorrencia.data_atualizacao %}
+            <p><span class="font-semibold">Última atualização:</span> {{ ocorrencia.data_atualizacao }}</p>
+            {% endif %}
+            <p><span class="font-semibold">ID:</span> {{ ocorrencia.id }}</p>
+        </div>
+        
+        <!-- Histórico do Aluno -->
+        <div class="mt-8 pt-8 border-t border-gray-200">
+            <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">Outras Ocorrências do Aluno</h2>
+            {% if historico %}
+                <div class="space-y-4">
+                    {% for item in historico %}
+                        <div class="p-4 bg-gray-50 border border-gray-200 rounded-lg hover:border-green-200 hover:bg-green-50/10 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                                <span class="text-xs font-semibold text-gray-500">{{ item.data_ocorrencia }}</span>
+                                <p class="text-sm text-gray-700 font-medium line-clamp-2 mt-1">{{ item.descricao }}</p>
+                            </div>
+                            <div>
+                                {% if item.gravidade == 'Leve' %}
+                                    <span class="px-2.5 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">Leve</span>
+                                {% elif item.gravidade == 'Média' %}
+                                    <span class="px-2.5 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold">Média</span>
+                                {% elif item.gravidade == 'Grave' %}
+                                    <span class="px-2.5 py-1 bg-red-100 text-red-800 rounded-full text-xs font-semibold">Grave</span>
+                                {% endif %}
+                                <a href="{{ url_for('ocorrencias.detalhes', ocorrencia_id=item.id) }}" 
+                                   class="ml-3 text-green-600 hover:text-green-800 text-sm font-semibold transition-all">
+                                    Ver <i class="fas fa-arrow-right text-xs ml-0.5"></i>
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="p-4 bg-gray-50 border border-dashed border-gray-300 rounded-lg text-center">
+                    <p class="text-sm text-gray-500 font-medium">Nenhuma outra ocorrência registrada para este aluno.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Actions -->
+        {% if not current_user.is_student() %}
+        <div class="mt-8 pt-8 border-t border-gray-200 flex gap-4">
+            <a href="{{ url_for('ocorrencias.editar', ocorrencia_id=ocorrencia.id) }}" 
+               class="flex-1 px-6 py-3 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition-all text-center">
+                <i class="fas fa-edit mr-2"></i>Editar Ocorrência
+            </a>
+            <button type="button" 
+                    id="btnDeletar"
+                    class="flex-1 px-6 py-3 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 transition-all">
+                <i class="fas fa-trash mr-2"></i>Deletar Ocorrência
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="modalConfirmacao" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-sm w-full p-6">
+        <div class="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mx-auto mb-4">
+            <i class="fas fa-exclamation text-red-600 text-xl"></i>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 text-center mb-2">Confirmar Exclusão</h3>
+        <p class="text-gray-600 text-center mb-6">
+            Tem certeza de que deseja deletar esta ocorrência? Esta ação não pode ser desfeita.
+        </p>
+        <div class="flex gap-3">
+            <button type="button" 
+                    id="btnCancelar"
+                    class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-all">
+                Cancelar
+            </button>
+            <button type="button" 
+                    id="btnConfirmarDeletar"
+                    class="flex-1 px-4 py-2 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 transition-all">
+                Deletar
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const modalConfirmacao = document.getElementById('modalConfirmacao');
+const btnDeletar = document.getElementById('btnDeletar');
+const btnCancelar = document.getElementById('btnCancelar');
+const btnConfirmarDeletar = document.getElementById('btnConfirmarDeletar');
+
+btnDeletar.addEventListener('click', () => {
+    modalConfirmacao.classList.remove('hidden');
+});
+
+btnCancelar.addEventListener('click', () => {
+    modalConfirmacao.classList.add('hidden');
+});
+
+btnConfirmarDeletar.addEventListener('click', async () => {
+    btnConfirmarDeletar.disabled = true;
+    btnConfirmarDeletar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Deletando...';
+    
+    try {
+        const response = await fetch('/ocorrencias/api/{{ ocorrencia.id }}/deletar', {
+            method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        
+        if (data.sucesso) {
+            showNotification('Ocorrência deletada com sucesso!', 'success');
+            setTimeout(() => {
+                window.location.href = "{{ url_for('ocorrencias.listar') }}";
+            }, 1500);
+        } else {
+            showNotification(data.mensagem, 'error');
+            btnConfirmarDeletar.disabled = false;
+            btnConfirmarDeletar.innerHTML = 'Deletar';
+        }
+    } catch (error) {
+        showNotification('Erro ao deletar ocorrência', 'error');
+        btnConfirmarDeletar.disabled = false;
+        btnConfirmarDeletar.innerHTML = 'Deletar';
+    }
+});
+</script>
+{% endblock %}

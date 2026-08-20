@@ -1,0 +1,8 @@
+# SISTEMA DE OCORRÊNCIAS ESCOLARES AFS
+# Desenvolvido com: Python + Flask | HTML5 + CSS3 + JavaScript
+# Arquitetura: MVC com Blueprints | Persistência: JSON
+
+Flask==2.3.3
+Werkzeug==2.3.7
+Jinja2==3.1.2
+python-dateutil==2.8.2

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sistema de Ocorrências Escolares AFS{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .gradient-afs {
+            background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+        }
+        
+        .gradient-orange {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        }
+        
+        .btn-gradient {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-gradient:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-50">
+    {% block content %}{% endblock %}
+    
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div id="notifications"></div>
+            <script>
+                const notifications = {
+                    {% for category, message in messages %}
+                    '{{ message }}': '{{ category }}'
+                    {% if not loop.last %},{% endif %}
+                    {% endfor %}
+                };
+                
+                Object.entries(notifications).forEach(([msg, type]) => {
+                    showNotification(msg, type);
+                });
+                
+                function showNotification(message, type = 'info') {
+                    const bgColor = {
+                        'sucesso': 'bg-green-50',
+                        'erro': 'bg-red-50',
+                        'info': 'bg-blue-50',
+                        'aviso': 'bg-yellow-50'
+                    }[type] || 'bg-blue-50';
+                    
+                    const textColor = {
+                        'sucesso': 'text-green-800',
+                        'erro': 'text-red-800',
+                        'info': 'text-blue-800',
+                        'aviso': 'text-yellow-800'
+                    }[type] || 'text-blue-800';
+                    
+                    const borderColor = {
+                        'sucesso': 'border-green-200',
+                        'erro': 'border-red-200',
+                        'info': 'border-blue-200',
+                        'aviso': 'border-yellow-200'
+                    }[type] || 'border-blue-200';
+                    
+                    const div = document.createElement('div');
+                    div.className = `${bgColor} ${textColor} border-l-4 ${borderColor} p-4 mb-4 rounded shadow-md`;
+                    div.textContent = message;
+                    
+                    const container = document.getElementById('notifications');
+                    if (container) {
+                        container.appendChild(div);
+                        
+                        setTimeout(() => {
+                            div.remove();
+                        }, 5000);
+                    }
+                }
+            </script>
+        {% endif %}
+    {% endwith %}
+    
+    <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+</body>
+</html>
