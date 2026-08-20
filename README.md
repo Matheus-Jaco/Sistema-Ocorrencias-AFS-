@@ -296,7 +296,7 @@ Sistema desenvolvido com padrões profissionais de engenharia de software, arqui
 
 ## 📄 Licença
 
-Todos os direitos reservados - Escola AFS
+Todos os direitos reservados - EEEP Adolfo Ferreira de Sousa 
 
 ## 🤝 Suporte
 
@@ -304,4 +304,4 @@ Para dúvidas ou sugestões sobre o sistema, entre em contato com a administraç
 
 ---
 
-**Desenvolvido com ❤️ para excelência**
+**Desenvolvido com ❤️ por Matheus-Jaco**
