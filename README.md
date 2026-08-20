@@ -1,6 +1,6 @@
 # Sistema de Ocorrências Escolares AFS
 
-## �️ Visão Geral
+## Visão Geral
 
 ![Sistema de Ocorrências Escolares AFS](img/ocorrencias.png)
 
