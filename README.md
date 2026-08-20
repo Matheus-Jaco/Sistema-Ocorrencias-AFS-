@@ -1,9 +1,5 @@
 # Sistema de Ocorrências Escolares AFS
 
-**Versão:** 1.0.0  
-**Status:** ✅ Produção  
-**Autor:** Desenvolvedor Full Stack Senior
-
 ## �️ Visão Geral
 
 ![Sistema de Ocorrências Escolares AFS](img/ocorrencias.png)
