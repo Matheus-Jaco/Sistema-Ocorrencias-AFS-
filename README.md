@@ -4,7 +4,7 @@
 
 ![Sistema de Ocorrências Escolares AFS](img/ocorrencias.png)
 
-## Descrição
+##📋 Descrição
 
 Sistema web para gestão de ocorrências escolares, desenvolvido para facilitar o registro, acompanhamento e análise de incidentes disciplinares de alunos em instituições de ensino. O projeto oferece uma interface moderna, responsiva e intuitiva, com dashboard administrativo, filtros, relatórios visuais e funcionalidades de cadastro, edição, detalhamento e exclusão de ocorrências.
 
