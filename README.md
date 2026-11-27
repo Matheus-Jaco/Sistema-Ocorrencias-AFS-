@@ -2,7 +2,7 @@
 
 ## Visão Geral
 
-![Sistema de Ocorrências Escolares AFS](img/ocorrencias.png)
+<img width="1918" height="992" alt="ocorrencias" src="https://github.com/user-attachments/assets/eb6813dc-4a99-47ba-b9f2-43cd78152dc7" />
 
 ## 📋 Descrição
 
